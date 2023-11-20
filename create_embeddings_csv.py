@@ -2,9 +2,14 @@
 import tiktoken
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
+import openai
+from dotenv import load_dotenv
 
+load_dotenv()
 # Load the cl100k_base tokenizer which is designed to work with the ada-002 model
 tokenizer = tiktoken.get_encoding("cl100k_base")
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 max_tokens = 500
 
 def get_df():
@@ -82,9 +87,17 @@ def create_shortened_df(shortened):
     df['n_tokens'] = df.text.apply(lambda x: len(tokenizer.encode(x)))
     return df
 
+def create_embeddings_column(df):
+    df['embeddings'] = df.text.apply(
+        lambda x: openai.Embedding.create(
+            input=x, 
+            engine='text-embedding-ada-002'
+        )['data'][0]['embedding'])
+    df.to_csv('processed/embeddings.csv')
+
 ###### EXECUTION BLOCK ######
 
 raw_df = get_df()
 shortened = raw_df_to_shortened(raw_df)
 shortened_df = create_shortened_df(shortened)
-visualize_token_count_histogram(shortened_df)
+create_embeddings_column(shortened_df)
