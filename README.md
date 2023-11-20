@@ -1,0 +1,1 @@
+https://platform.openai.com/docs/tutorials/web-qa-embeddings
